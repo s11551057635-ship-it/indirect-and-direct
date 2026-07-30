@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Transmission: Direct vs. Indirect</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        direct: {
+                            light: '#FEF2F2',
+                            border: '#FCA5A5',
+                            DEFAULT: '#EF4444',
+                            dark: '#B91C1C',
+                        },
+                        indirect: {
+                            light: '#EFF6FF',
+                            border: '#93C5FD',
+                            DEFAULT: '#3B82F6',
+                            dark: '#1D4ED8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .animated-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Navigation Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-indigo-100">
+                    <i class="fa-solid fa-virus"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-900 leading-tight">Disease Transmission</h1>
+                    <p class="text-xs text-slate-500 font-medium">Direct vs. Indirect Contact Checker</p>
+                </div>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="flex bg-slate-100 p-1 rounded-lg text-xs font-semibold">
+                <button id="tab-quiz" onclick="switchTab('quiz')" class="px-3 py-1.5 rounded-md transition-all duration-200 text-indigo-700 bg-white shadow-xs">
+                    <i class="fa-solid fa-circle-question mr-1"></i> Interactive Quiz
+                </button>
+                <button id="tab-explorer" onclick="switchTab('explorer')" class="px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 transition-all duration-200">
+                    <i class="fa-solid fa-list-check mr-1"></i> Explorer
+                </button>
+                <button id="tab-prevention" onclick="switchTab('prevention')" class="px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 transition-all duration-200">
+                    <i class="fa-solid fa-shield-halved mr-1"></i> Prevention
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-6">
+
+        <!-- QUIZ VIEW -->
+        <section id="view-quiz" class="animated-fade-in space-y-6">
+            
+            <!-- Quick Info Banner -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div class="p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-3">
+                    <span class="p-2 bg-red-100 text-red-600 rounded-lg shrink-0"><i class="fa-solid fa-handshake"></i></span>
+                    <div>
+                        <strong class="text-red-900 block font-semibold mb-0.5">Direct Contact</strong>
+                        <span class="text-red-700">Physical touch, exchange of fluids, placental, or close-range droplets (< a few feet).</span>
+                    </div>
+                </div>
+                <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-xl flex items-start space-x-3">
+                    <span class="p-2 bg-blue-100 text-blue-600 rounded-lg shrink-0"><i class="fa-solid fa-wind"></i></span>
+                    <div>
+                        <strong class="text-blue-900 block font-semibold mb-0.5">Indirect Contact</strong>
+                        <span class="text-blue-700">Airborne particles, contaminated objects, food/water, vectors (insects), or animals.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Card -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 md:p-8 space-y-6">
+                <!-- Progress & Stats Bar -->
+                <div class="flex items-center justify-between text-xs font-semibold text-slate-500 pb-3 border-b border-slate-100">
+                    <span id="quiz-progress-text">Scenario 1 of 10</span>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-emerald-600"><i class="fa-solid fa-circle-check mr-1"></i> Score: <span id="quiz-score">0</span></span>
+                        <span class="text-indigo-600"><i class="fa-solid fa-bolt mr-1"></i> Streak: <span id="quiz-streak">0</span></span>
+                    </div>
+                </div>
+
+                <!-- Progress Bar Graphic -->
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                    <div id="quiz-progress-bar" class="bg-indigo-600 h-full w-0 transition-all duration-300"></div>
+                </div>
+
+                <!-- Question / Scenario Title -->
+                <div class="space-y-2 py-2">
+                    <div class="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-medium">
+                        <i id="scenario-category-icon" class="fa-solid fa-bacteria"></i>
+                        <span id="scenario-category">Category</span>
+                    </div>
+                    <h2 id="scenario-text" class="text-lg md:text-xl font-bold text-slate-800 leading-snug">
+                        Loading scenario...
+                    </h2>
+                </div>
+
+                <!-- Choice Buttons -->
+                <div id="action-buttons" class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <button onclick="checkAnswer('Direct')" class="group relative flex items-center justify-between p-4 rounded-xl border-2 border-red-200 bg-red-50/50 hover:bg-red-50 hover:border-red-400 active:scale-[0.98] transition-all text-left">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-red-500 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                                <i class="fa-solid fa-hand"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-slate-800 group-hover:text-red-900">Direct Contact</div>
+                                <div class="text-xs text-slate-500">Person-to-person, droplets</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-red-300 group-hover:text-red-500"></i>
+                    </button>
+
+                    <button onclick="checkAnswer('Indirect')" class="group relative flex items-center justify-between p-4 rounded-xl border-2 border-blue-200 bg-blue-50/50 hover:bg-blue-50 hover:border-blue-400 active:scale-[0.98] transition-all text-left">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-500 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                                <i class="fa-solid fa-route"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-slate-800 group-hover:text-blue-900">Indirect Contact</div>
+                                <div class="text-xs text-slate-500">Airborne, objects, food, vectors</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-blue-300 group-hover:text-blue-500"></i>
+                    </button>
+                </div>
+
+                <!-- Feedback Section (Hidden until answered) -->
+                <div id="feedback-card" class="hidden p-5 rounded-xl border animated-fade-in space-y-3">
+                    <div class="flex items-center space-x-2">
+                        <span id="feedback-badge" class="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider"></span>
+                        <h3 id="feedback-title" class="font-bold text-base"></h3>
+                    </div>
+                    <p id="feedback-explanation" class="text-sm leading-relaxed text-slate-700"></p>
+                    <div id="feedback-detail" class="text-xs p-3 rounded-lg bg-white/70 border border-slate-200 text-slate-600 font-mono"></div>
+                    <button onclick="nextScenario()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl transition-all shadow-md active:scale-[0.99] flex items-center justify-center space-x-2">
+                        <span>Next Scenario</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Quiz Completion Summary (Hidden initially) -->
+            <div id="quiz-summary" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center space-y-5 animated-fade-in">
+                <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="text-2xl font-bold text-slate-800">Quiz Completed!</h3>
+                    <p class="text-sm text-slate-500">Here is how well you understand disease transmission mechanics:</p>
+                </div>
+                <div class="text-4xl font-extrabold text-indigo-600" id="summary-score">0 / 0</div>
+                <p id="summary-feedback-msg" class="text-sm text-slate-600 max-w-md mx-auto"></p>
+                <div class="pt-2">
+                    <button onclick="resetQuiz()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-md transition-all active:scale-[0.98]">
+                        <i class="fa-solid fa-rotate-right mr-2"></i> Try Again
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- EXPLORER VIEW -->
+        <section id="view-explorer" class="hidden animated-fade-in space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Transmission Classification Library</h2>
+                        <p class="text-xs text-slate-500">Browse all mechanisms outlined in the reference guidelines.</p>
+                    </div>
+
+                    <!-- Filter buttons -->
+                    <div class="flex space-x-1 bg-slate-100 p-1 rounded-lg text-xs font-medium">
+                        <button onclick="filterExplorer('all')" class="exp-filter-btn px-3 py-1 rounded-md bg-white text-slate-800 shadow-xs" data-filter="all">All</button>
+                        <button onclick="filterExplorer('Direct')" class="exp-filter-btn px-3 py-1 rounded-md text-slate-600 hover:text-slate-900" data-filter="Direct">Direct Only</button>
+                        <button onclick="filterExplorer('Indirect')" class="exp-filter-btn px-3 py-1 rounded-md text-slate-600 hover:text-slate-900" data-filter="Indirect">Indirect Only</button>
+                    </div>
+                </div>
+
+                <!-- Explorer Cards Grid -->
+                <div id="explorer-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- PREVENTION VIEW -->
+        <section id="view-prevention" class="hidden animated-fade-in space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-sm space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Key Prevention Measures</h2>
+                    <p class="text-xs text-slate-500 mt-1">Simple precautions drastically cut down both direct and indirect disease transmission.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Hygiene -->
+                    <div class="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                        <div class="flex items-center space-x-3 text-indigo-600">
+                            <div class="p-2.5 bg-indigo-100 rounded-lg font-bold"><i class="fa-solid fa-soap"></i></div>
+                            <h3 class="font-bold text-slate-800">1. Personal Hygiene</h3>
+                        </div>
+                        <ul class="text-xs text-slate-600 space-y-2 list-disc list-inside leading-relaxed">
+                            <li><strong>Wash hands vigorously</strong> for at least 20 seconds with soap and warm water.</li>
+                            <li>Use alcohol-based hand sanitizer if soap is unavailable.</li>
+                            <li>Minimize touching your mouth, nose, or eyes with unwashed hands.</li>
+                            <li>Cover coughs/sneezes and wash hands immediately afterward.</li>
+                            <li>Wear gloves when handling blood, feces, or caring for ill persons.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Food Safety -->
+                    <div class="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                        <div class="flex items-center space-x-3 text-emerald-600">
+                            <div class="p-2.5 bg-emerald-100 rounded-lg font-bold"><i class="fa-solid fa-utensils"></i></div>
+                            <h3 class="font-bold text-slate-800">2. Food & Water Safety</h3>
+                        </div>
+                        <ul class="text-xs text-slate-600 space-y-2 list-disc list-inside leading-relaxed">
+                            <li>Prevent cross-contamination by keeping raw meats separate from produce.</li>
+                            <li>Set refrigerator to ≤ 40°F (4°C) and freezer to ≤ 0°F (-18°C).</li>
+                            <li>Cook meats to 145°F (63°C), ground meat to 160°F (71°C), poultry to 165°F (73°C).</li>
+                            <li>Avoid untreated tap water when traveling in high-risk zones.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Vector & Animal Safety -->
+                    <div class="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                        <div class="flex items-center space-x-3 text-amber-600">
+                            <div class="p-2.5 bg-amber-100 rounded-lg font-bold"><i class="fa-solid fa-bug"></i></div>
+                            <h3 class="font-bold text-slate-800">3. Insects & Animals</h3>
+                        </div>
+                        <ul class="text-xs text-slate-600 space-y-2 list-disc list-inside leading-relaxed">
+                            <li>Wear long sleeves and long pants in wooded or high-insect areas.</li>
+                            <li>Use insect repellent and mosquito netting.</li>
+                            <li>Check for ticks immediately after outdoor activities; remove with fine tweezers.</li>
+                            <li>Avoid direct contact with wild, sick, or dead animals.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Vaccinations -->
+                    <div class="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                        <div class="flex items-center space-x-3 text-purple-600">
+                            <div class="p-2.5 bg-purple-100 rounded-lg font-bold"><i class="fa-solid fa-syringe"></i></div>
+                            <h3 class="font-bold text-slate-800">4. Vaccinations</h3>
+                        </div>
+                        <ul class="text-xs text-slate-600 space-y-2 list-disc list-inside leading-relaxed">
+                            <li>Stay up to date on vaccines (Measles, Mumps, Influenza, HPV, etc.).</li>
+                            <li>Keep pet vaccinations current to prevent zoonotic outbreaks.</li>
+                            <li>Consult your doctor prior to international travel for specific immunizations.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Simple Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400 mt-auto">
+        <p>Disease Transmission Reference & Interactive Classification Tool</p>
+    </footer>
+
+    <!-- JavaScript Data and Interactive Mechanics -->
+    <script>
+        // Comprehensive Dataset based directly on the provided document
+        const quizScenarios = [
+            {
+                id: 1,
+                type: "Direct",
+                category: "Person-to-Person",
+                icon: "fa-user-friends",
+                title: "Shaking hands or exchanging body fluids with an infected person",
+                explanation: "Direct transmission occurs when an infected person touches or exchanges body fluids with someone else.",
+                example: "Examples: STDs, Gastrointestinal infections."
+            },
+            {
+                id: 2,
+                type: "Indirect",
+                category: "Airborne Transmission",
+                icon: "fa-wind",
+                title: "Entering a room and catching measles after an infected person has departed",
+                explanation: "Airborne transmission allows agents to travel long distances and remain suspended in the air over time.",
+                example: "Example: Measles virus lingering in room air."
+            },
+            {
+                id: 3,
+                type: "Direct",
+                category: "Droplet Spread",
+                icon: "fa-head-side-cough",
+                title: "Inhaling respiratory droplets from a person coughing or sneezing right next to you",
+                explanation: "Droplet spread requires close proximity because droplets quickly fall to the ground within a few feet.",
+                example: "Example: Respiratory illnesses passed via close conversation or coughs."
+            },
+            {
+                id: 4,
+                type: "Indirect",
+                category: "Contaminated Objects (Fomites)",
+                icon: "fa-door-closed",
+                title: "Touching a doorknob touched by a sick person, then touching your eyes or mouth",
+                explanation: "Organisms can survive on objects. Transmission happens indirectly when you transfer pathogens from the object to your face.",
+                example: "Example: Cold, flu, or bacterial germs on doorknobs or light switches."
+            },
+            {
+                id: 5,
+                type: "Indirect",
+                category: "Food & Water",
+                icon: "fa-utensils",
+                title: "Eating undercooked meat or produce infected with E. coli",
+                explanation: "Infectious diseases can be spread through food or drinking water containing bacteria or viruses.",
+                example: "Examples: E. coli produce contamination, Botulism from improper canning."
+            },
+            {
+                id: 6,
+                type: "Indirect",
+                category: "Insect Bites (Vector-Borne)",
+                icon: "fa-mosquito",
+                title: "Getting bitten by a mosquito carrying the malaria parasite",
+                explanation: "Insects like mosquitoes, ticks, and fleas act as biological vectors after feeding on infected hosts.",
+                example: "Examples: Malaria, West Nile virus, Lyme disease."
+            },
+            {
+                id: 7,
+                type: "Direct",
+                category: "Maternal-Fetal Transmission",
+                icon: "fa-baby-carriage",
+                title: "Passing an infection from parent to unborn fetus via the placenta or childbirth",
+                explanation: "Transmission from a pregnant person to an unborn fetus via placenta or birth canal is a form of direct contact.",
+                example: "Examples: Gonorrhea or other STDs passed during delivery."
+            },
+            {
+                id: 8,
+                type: "Indirect",
+                category: "Environmental Reservoirs",
+                icon: "fa-mountain-sun",
+                title: "Walking barefoot on soil contaminated with hookworm larvae",
+                explanation: "Pathogens living in environmental reservoirs (soil, water, vegetation) can indirectly infect humans.",
+                example: "Examples: Hookworm from soil, Legionnaires' disease from cooling water towers."
+            },
+            {
+                id: 9,
+                type: "Indirect",
+                category: "Animal-to-Person Waste",
+                icon: "fa-cat",
+                title: "Contracting Toxoplasma gondii while cleaning a cat litter box",
+                explanation: "Handling animal waste or receiving scratches/bites introduces pathogens indirectly or via animal reservoirs.",
+                example: "Example: Toxoplasmosis from cat feces."
+            },
+            {
+                id: 10,
+                type: "Indirect",
+                category: "Animal Reservoirs (Zoonosis)",
+                icon: "fa-paw",
+                title: "Contracting Rabies or Plague from infected rodents or wildlife",
+                explanation: "Zoonotic diseases originate in animal reservoirs and transfer across species to humans.",
+                example: "Examples: Anthrax (sheep), Rabies (mammals), Plague (rodents)."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let streak = 0;
+        let shuffledQuiz = [...quizScenarios];
+
+        // Shuffle utility
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        // Initialize Quiz State
+        function initQuiz() {
+            shuffledQuiz = shuffle([...quizScenarios]);
+            currentQuestionIndex = 0;
+            score = 0;
+            streak = 0;
+            document.getElementById('quiz-score').innerText = score;
+            document.getElementById('quiz-streak').innerText = streak;
+            document.getElementById('quiz-summary').classList.add('hidden');
+            document.getElementById('action-buttons').classList.remove('hidden');
+            renderScenario();
+        }
+
+        // Render Current Question
+        function renderScenario() {
+            const current = shuffledQuiz[currentQuestionIndex];
+            const total = shuffledQuiz.length;
+
+            document.getElementById('quiz-progress-text').innerText = `Scenario ${currentQuestionIndex + 1} of ${total}`;
+            document.getElementById('quiz-progress-bar').style.width = `${((currentQuestionIndex) / total) * 100}%`;
+
+            document.getElementById('scenario-category').innerText = current.category;
+            document.getElementById('scenario-category-icon').className = `fa-solid ${current.icon}`;
+            document.getElementById('scenario-text').innerText = current.title;
+
+            // Reset Feedback UI
+            const feedbackCard = document.getElementById('feedback-card');
+            feedbackCard.classList.add('hidden');
+            feedbackCard.className = "hidden p-5 rounded-xl border animated-fade-in space-y-3";
+            document.getElementById('action-buttons').classList.remove('hidden');
+        }
+
+        // Check User Answer
+        function checkAnswer(userChoice) {
+            const current = shuffledQuiz[currentQuestionIndex];
+            const isCorrect = (userChoice === current.type);
+
+            if (isCorrect) {
+                score++;
+                streak++;
+            } else {
+                streak = 0;
+            }
+
+            document.getElementById('quiz-score').innerText = score;
+            document.getElementById('quiz-streak').innerText = streak;
+
+            // Hide choice buttons
+            document.getElementById('action-buttons').classList.add('hidden');
+
+            // Show Feedback Card
+            const feedbackCard = document.getElementById('feedback-card');
+            const badge = document.getElementById('feedback-badge');
+            const title = document.getElementById('feedback-title');
+            const explanation = document.getElementById('feedback-explanation');
+            const detail = document.getElementById('feedback-detail');
+
+            feedbackCard.classList.remove('hidden');
+
+            if (isCorrect) {
+                feedbackCard.classList.add('bg-emerald-50', 'border-emerald-200');
+                badge.className = "px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-emerald-200 text-emerald-800";
+                badge.innerText = "Correct!";
+                title.className = "font-bold text-base text-emerald-900";
+                title.innerText = `Yes, this is ${current.type} Transmission`;
+            } else {
+                feedbackCard.classList.add('bg-amber-50', 'border-amber-200');
+                badge.className = "px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-amber-200 text-amber-800";
+                badge.innerText = "Incorrect";
+                title.className = "font-bold text-base text-amber-900";
+                title.innerText = `Actually, this is ${current.type} Transmission`;
+            }
+
+            explanation.innerText = current.explanation;
+            detail.innerText = current.example;
+        }
+
+        // Advance to Next Question
+        function nextScenario() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < shuffledQuiz.length) {
+                renderScenario();
+            } else {
+                showQuizSummary();
+            }
+        }
+
+        // Show Final Summary
+        function showQuizSummary() {
+            document.getElementById('quiz-progress-bar').style.width = '100%';
+            document.getElementById('action-buttons').classList.add('hidden');
+            document.getElementById('feedback-card').classList.add('hidden');
+
+            const summaryCard = document.getElementById('quiz-summary');
+            const scoreDisplay = document.getElementById('summary-score');
+            const msgDisplay = document.getElementById('summary-feedback-msg');
+
+            scoreDisplay.innerText = `${score} / ${shuffledQuiz.length}`;
+            
+            const pct = (score / shuffledQuiz.length) * 100;
+            if (pct === 100) {
+                msgDisplay.innerText = "Perfect score! You fully understand the differences between direct and indirect disease transmission.";
+            } else if (pct >= 70) {
+                msgDisplay.innerText = "Great job! You have a solid grasp of how infectious diseases spread.";
+            } else {
+                msgDisplay.innerText = "Good effort! Review the Explorer and Prevention tabs to sharpen your knowledge.";
+            }
+
+            summaryCard.classList.remove('hidden');
+        }
+
+        // Reset Quiz
+        function resetQuiz() {
+            initQuiz();
+        }
+
+        // Populate Explorer Grid
+        function populateExplorer() {
+            const grid = document.getElementById('explorer-grid');
+            grid.innerHTML = '';
+
+            quizScenarios.forEach(item => {
+                const isDirect = item.type === 'Direct';
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border transition-all duration-200 exp-card ${isDirect ? 'bg-red-50/40 border-red-200 hover:border-red-300' : 'bg-blue-50/40 border-blue-200 hover:border-blue-300'}`;
+                card.setAttribute('data-type', item.type);
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded text-xs font-semibold ${isDirect ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}">
+                            <i class="fa-solid ${item.icon}"></i>
+                            <span>${item.category}</span>
+                        </span>
+                        <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded ${isDirect ? 'bg-red-200 text-red-900' : 'bg-blue-200 text-blue-900'}">
+                            ${item.type}
+                        </span>
+                    </div>
+                    <h4 class="font-bold text-sm text-slate-800 mb-1">${item.title}</h4>
+                    <p class="text-xs text-slate-600 mb-2 leading-relaxed">${item.explanation}</p>
+                    <div class="text-[11px] text-slate-500 font-medium italic">${item.example}</div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Filter Explorer Cards
+        function filterExplorer(type) {
+            const buttons = document.querySelectorAll('.exp-filter-btn');
+            buttons.forEach(btn => {
+                if (btn.getAttribute('data-filter') === type) {
+                    btn.className = "exp-filter-btn px-3 py-1 rounded-md bg-white text-slate-800 shadow-xs font-semibold";
+                } else {
+                    btn.className = "exp-filter-btn px-3 py-1 rounded-md text-slate-600 hover:text-slate-900 font-medium";
+                }
+            });
+
+            const cards = document.querySelectorAll('.exp-card');
+            cards.forEach(card => {
+                if (type === 'all' || card.getAttribute('data-type') === type) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // Tab Navigation Switcher
+        function switchTab(tab) {
+            const tabs = ['quiz', 'explorer', 'prevention'];
+            tabs.forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    view.classList.remove('hidden');
+                    btn.className = "px-3 py-1.5 rounded-md transition-all duration-200 text-indigo-700 bg-white shadow-xs font-semibold";
+                } else {
+                    view.classList.add('hidden');
+                    btn.className = "px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 transition-all duration-200 font-medium";
+                }
+            });
+        }
+
+        // Initialize on window load
+        window.onload = function() {
+            initQuiz();
+            populateExplorer();
+        };
+    </script>
+</body>
+</html>
